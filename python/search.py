@@ -72,30 +72,19 @@ def hybrid_search(query, top_k=3):
     semantic_results = semantic_search(query, top_k=5)
     keyword_results = keyword_search(query, top_k=5)
 
-    rrf_scores = {}
-    doc_map = {}
+    scores = {}
 
-    k = 60  # RRF constant
+    for doc in semantic_results:
+        text = doc["text"]
+        scores[text] = scores.get(text, 0) + doc["score"] * 0.7
 
-    for rank, doc in enumerate(semantic_results):
-        key = doc['text']
-        rrf_scores[key] = rrf_scores.get(key, 0) + 1 / (rank + k)
-        doc_map[key] = doc
+    for doc in keyword_results:
+        text = doc["text"]
+        scores[text] = scores.get(text, 0) + doc["score"] * 0.3
 
-    for rank, doc in enumerate(keyword_results):
-        key = doc['text']
-        rrf_scores[key] = rrf_scores.get(key, 0) + 1 / (rank + k)
-        doc_map[key] = doc
+    ranked = sorted(scores.items(), key=lambda x: x[1], reverse=True)
 
-    ranked = sorted(rrf_scores.items(), key=lambda x: x[1], reverse=True)
-
-    results = []
-    for text, score in ranked[:top_k]:
-        doc = doc_map[text]
-        results.append({
-            "text": doc["text"],
-            "category": doc.get("category"),
-            "score": round(score, 6)
-        })
-
-    return results
+    return [
+        {"text": text, "score": round(score, 4)}
+        for text, score in ranked[:top_k]
+    ]
