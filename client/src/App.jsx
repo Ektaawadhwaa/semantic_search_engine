@@ -2,6 +2,7 @@ import { useState } from 'react'
 import axios from 'axios'
 import SearchBar from './components/SearchBar'
 import ResultCard from './components/ResultCard'
+import UploadForm from './components/UploadForm'
 
 const API_URL = 'https://semantic-search-node.onrender.com'
 
@@ -42,7 +43,7 @@ export default function App() {
       <p style={{ textAlign: 'center', color: '#666', marginBottom: '32px' }}>
         Search by meaning, not just keywords
       </p>
-
+<UploadForm />
       <SearchBar
         query={query}
         setQuery={setQuery}
