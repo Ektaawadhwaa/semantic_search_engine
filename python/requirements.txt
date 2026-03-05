@@ -1,3 +1,5 @@
+--extra-index-url https://download.pytorch.org/whl/cpu
+
 flask
 flask-cors
 pymongo
@@ -6,4 +8,4 @@ python-dotenv
 gunicorn
 
 sentence-transformers
-torch==2.10.0 --index-url https://download.pytorch.org/whl/cpu
+torch==2.10.0
