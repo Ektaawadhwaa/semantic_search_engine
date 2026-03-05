@@ -38,7 +38,14 @@ def search():
 
     results = hybrid_search(query)
     return jsonify({"query": query, "results": results})
-
+@app.route('/debug-embedding', methods=['GET'])
+def debug_embedding():
+    result = get_embedding("test sentence")
+    return jsonify({
+        "type": str(type(result)),
+        "length": len(result) if isinstance(result, list) else "not a list",
+        "sample": result[:3] if isinstance(result, list) else result
+    })
 @app.route('/health', methods=['GET'])
 def health():
     return jsonify({"status": "ok"})
