@@ -3,7 +3,7 @@ import axios from 'axios'
 import SearchBar from './components/SearchBar'
 import ResultCard from './components/ResultCard'
 
-const API_URL = 'http://localhost:5000'
+const API_URL = 'https://semantic-search-node.onrender.com'
 
 export default function App() {
   const [query, setQuery] = useState('')
