@@ -1,6 +1,6 @@
 flask
 flask-cors
-pymongo
-sentence-transformers
+pymongo 
+requests
 python-dotenv
 gunicorn
