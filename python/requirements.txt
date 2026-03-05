@@ -1,8 +1,9 @@
 flask
 flask-cors
-pymongo 
+pymongo
 requests
 python-dotenv
 gunicorn
+
 sentence-transformers
-torch
+torch==2.2.2 --index-url https://download.pytorch.org/whl/cpu
