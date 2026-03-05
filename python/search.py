@@ -4,20 +4,29 @@ import os
 from dotenv import load_dotenv
 
 load_dotenv()
-client = MongoClient(os.getenv('MONGO_URI'))
-db = client[os.getenv('DB_NAME')]
-collection = db[os.getenv('COLLECTION_NAME')]
+
+MONGO_URI = os.getenv('MONGO_URI')
+DB_NAME = os.getenv('DB_NAME')
+COLLECTION_NAME = os.getenv('COLLECTION_NAME')
+
+if not all([MONGO_URI, DB_NAME, COLLECTION_NAME]):
+    raise ValueError("Missing MongoDB environment variables")
+
+client = MongoClient(MONGO_URI)
+db = client[DB_NAME]
+collection = db[COLLECTION_NAME]
+
 
 def semantic_search(query, top_k=5):
     query_embedding = get_embedding(query)
 
-    results = collection.aggregate([
+    pipeline = [
         {
             "$vectorSearch": {
                 "index": "vector_index",
                 "path": "embedding",
                 "queryVector": query_embedding,
-                "numCandidates": 20,
+                "numCandidates": 50,
                 "limit": top_k
             }
         },
@@ -29,12 +38,13 @@ def semantic_search(query, top_k=5):
                 "score": {"$meta": "vectorSearchScore"}
             }
         }
-    ])
-    return list(results)
+    ]
+
+    return list(collection.aggregate(pipeline))
 
 
 def keyword_search(query, top_k=5):
-    results = collection.aggregate([
+    pipeline = [
         {
             "$search": {
                 "index": "keyword_index",
@@ -53,8 +63,9 @@ def keyword_search(query, top_k=5):
                 "score": {"$meta": "searchScore"}
             }
         }
-    ])
-    return list(results)
+    ]
+
+    return list(collection.aggregate(pipeline))
 
 
 def hybrid_search(query, top_k=3):
@@ -62,15 +73,29 @@ def hybrid_search(query, top_k=3):
     keyword_results = keyword_search(query, top_k=5)
 
     rrf_scores = {}
+    doc_map = {}
+
+    k = 60  # RRF constant
 
     for rank, doc in enumerate(semantic_results):
-        text = doc['text']
-        rrf_scores[text] = rrf_scores.get(text, 0) + 1 / (rank + 1 + 60)
+        key = doc['text']
+        rrf_scores[key] = rrf_scores.get(key, 0) + 1 / (rank + k)
+        doc_map[key] = doc
 
     for rank, doc in enumerate(keyword_results):
-        text = doc['text']
-        rrf_scores[text] = rrf_scores.get(text, 0) + 1 / (rank + 1 + 60)
+        key = doc['text']
+        rrf_scores[key] = rrf_scores.get(key, 0) + 1 / (rank + k)
+        doc_map[key] = doc
 
     ranked = sorted(rrf_scores.items(), key=lambda x: x[1], reverse=True)
 
-    return [{"text": text, "score": round(score, 6)} for text, score in ranked[:top_k]]
+    results = []
+    for text, score in ranked[:top_k]:
+        doc = doc_map[text]
+        results.append({
+            "text": doc["text"],
+            "category": doc.get("category"),
+            "score": round(score, 6)
+        })
+
+    return results

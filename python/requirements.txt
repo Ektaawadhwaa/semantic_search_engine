@@ -4,3 +4,5 @@ pymongo
 requests
 python-dotenv
 gunicorn
+sentence-transformers
+torch
