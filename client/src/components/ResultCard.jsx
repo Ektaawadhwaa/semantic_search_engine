@@ -24,7 +24,7 @@ const ResultCard = ({ text, category, score }) => {
           borderRadius: '20px',
           fontSize: '13px'
         }}>
-          🎯 Score: {score}
+          🎯 Score: {score.toFixed(3)}
         </span>
       </div>
     </div>

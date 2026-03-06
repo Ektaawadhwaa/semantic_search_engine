@@ -31,8 +31,8 @@ def semantic_search(query, top_k=5):
             }
         },
         {
-            "$project": {
-                "_id": 0,
+            "$project": { 
+                "_id": 1,
                 "text": 1,
                 "category": 1,
                 "score": {"$meta": "vectorSearchScore"}
@@ -56,8 +56,8 @@ def keyword_search(query, top_k=5):
         },
         {"$limit": top_k},
         {
-            "$project": {
-                "_id": 0,
+            "$project": { 
+                "_id": 1,
                 "text": 1,
                 "category": 1,
                 "score": {"$meta": "searchScore"}
@@ -73,18 +73,24 @@ def hybrid_search(query, top_k=3):
     keyword_results = keyword_search(query, top_k=5)
 
     scores = {}
-
+    doc_map = {}
     for doc in semantic_results:
-        text = doc["text"]
-        scores[text] = scores.get(text, 0) + doc["score"] * 0.7
+        _id = str(doc["_id"])
+        scores[_id] = scores.get(_id, 0) + doc["score"] * 0.7
+        doc_map[_id] = doc
 
     for doc in keyword_results:
-        text = doc["text"]
-        scores[text] = scores.get(text, 0) + doc["score"] * 0.3
+        _id = str(doc["_id"])
+        scores[_id] = scores.get(_id, 0) + doc["score"] * 0.3
+        doc_map[_id] = doc
 
     ranked = sorted(scores.items(), key=lambda x: x[1], reverse=True)
-
+ 
     return [
-        {"text": text, "score": round(score, 4)}
-        for text, score in ranked[:top_k]
-    ]
+    {
+        "text": doc_map[_id]["text"],
+        "category": doc_map[_id].get("category", "general"),
+        "score": round(score, 4)
+    }
+    for _id, score in ranked[:top_k]
+]

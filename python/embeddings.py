@@ -18,7 +18,7 @@ if PRODUCTION:
     # load model once
     model = SentenceTransformer("sentence-transformers/all-MiniLM-L6-v2")
 
-    # force CPU (important for Render)
+     
     model = model.to("cpu")
 
     def get_embedding(text: str):
