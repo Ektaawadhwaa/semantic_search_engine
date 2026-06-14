@@ -14,7 +14,7 @@ def ingest():
 
         text = data.get('text', '').strip()
         category = data.get('category', 'general')
-        date = data.get('date', '2024-01-01')
+        date = data.get('date', '2025-01-01')
 
         if not text:
             return jsonify({"error": "text is required"}), 400

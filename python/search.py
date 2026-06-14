@@ -40,7 +40,7 @@ def semantic_search(query, top_k=5):
         }
     ]
 
-    return list(collection.aggregate(pipeline))
+    return list(collection.aggregate(pipeline))#execute query
 
 
 def keyword_search(query, top_k=5):
@@ -78,13 +78,15 @@ def hybrid_search(query, top_k=3):
         _id = str(doc["_id"])
         scores[_id] = scores.get(_id, 0) + doc["score"] * 0.7
         doc_map[_id] = doc
-
+    max_kw = max((d["score"] for d in keyword_results), default=1)
     for doc in keyword_results:
         _id = str(doc["_id"])
-        scores[_id] = scores.get(_id, 0) + doc["score"] * 0.3
+        scores[_id] = scores.get(_id, 0) + (doc["score"] / max_kw) * 0.3
         doc_map[_id] = doc
+     
 
     ranked = sorted(scores.items(), key=lambda x: x[1], reverse=True)
+    #Sorts documents by score.
  
     return [
     {
